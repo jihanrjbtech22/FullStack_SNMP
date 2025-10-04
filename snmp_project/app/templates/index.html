@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SNMP Demo Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5; }
+        h1 { color: #2c3e50; text-align: center; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .section { background: white; padding: 20px; margin: 10px 0; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .section h2 { color: #34495e; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        .item { margin: 8px 0; padding: 5px; background: #f8f9fa; border-radius: 5px; }
+        .item b { color: #2c3e50; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .status { color: #27ae60; font-weight: bold; }
+        .warning { color: #f39c12; font-weight: bold; }
+        .error { color: #e74c3c; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>SNMP Manager Dashboard</h1>
+    <div class="container">
+        <div id="data"></div>
+    </div>
+
+    <script>
+        function formatBytes(bytes) {
+            if (bytes === 'N/A' || bytes === '0') return 'N/A';
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function formatUptime(centiseconds) {
+            if (centiseconds === 'N/A' || centiseconds === '0') return 'N/A';
+            const seconds = Math.floor(centiseconds / 100);
+            const days = Math.floor(seconds / 86400);
+            const hours = Math.floor((seconds % 86400) / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            return `${days}d ${hours}h ${minutes}m`;
+        }
+
+        async function fetchData() {
+            const response = await fetch('/api/system');
+            const data = await response.json();
+            const div = document.getElementById('data');
+            
+            const memoryUsed = parseInt(data.memoryUsed) || 0;
+            const memoryTotal = parseInt(data.memoryTotal) || 1;
+            const memoryPercent = Math.round((memoryUsed / memoryTotal) * 100);
+            
+            const diskUsed = parseInt(data.diskUsed) || 0;
+            const diskTotal = parseInt(data.diskTotal) || 1;
+            const diskPercent = Math.round((diskUsed / diskTotal) * 100);
+            
+            div.innerHTML = `
+                <div class="grid">
+                    <div class="section">
+                        <h2>🖥️ System Information</h2>
+                        <div class='item'><b>Description:</b> ${data.sysDescr}</div>
+                        <div class='item'><b>System Name:</b> ${data.sysName}</div>
+                        <div class='item'><b>Location:</b> ${data.sysLocation}</div>
+                        <div class='item'><b>Contact:</b> ${data.sysContact}</div>
+                        <div class='item'><b>Uptime:</b> ${formatUptime(data.sysUpTime)}</div>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>🧠 Memory Information</h2>
+                        <div class='item'><b>Total Memory:</b> ${formatBytes(data.memoryTotal)}</div>
+                        <div class='item'><b>Used Memory:</b> ${formatBytes(data.memoryUsed)} (${memoryPercent}%)</div>
+                        <div class='item'><b>Free Memory:</b> ${formatBytes(data.memoryFree)}</div>
+                        <div class='item'><b>Memory Status:</b> <span class="${memoryPercent > 90 ? 'error' : memoryPercent > 70 ? 'warning' : 'status'}">${memoryPercent > 90 ? 'Critical' : memoryPercent > 70 ? 'Warning' : 'Normal'}</span></div>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>⚡ CPU Information</h2>
+                        <div class='item'><b>CPU Cores:</b> ${data.cpuCount}</div>
+                        <div class='item'><b>CPU Usage:</b> ${data.cpuUsage}%</div>
+                        <div class='item'><b>CPU Idle:</b> ${data.cpuIdle}%</div>
+                        <div class='item'><b>Temperature:</b> ${data.cpuTemperature}°C</div>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>📊 Load Averages</h2>
+                        <div class='item'><b>1-minute Load:</b> ${data.load1min}</div>
+                        <div class='item'><b>5-minute Load:</b> ${data.load5min}</div>
+                        <div class='item'><b>15-minute Load:</b> ${data.load15min}</div>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>💾 Disk Information</h2>
+                        <div class='item'><b>Total Disk:</b> ${formatBytes(data.diskTotal)}</div>
+                        <div class='item'><b>Used Disk:</b> ${formatBytes(data.diskUsed)} (${diskPercent}%)</div>
+                        <div class='item'><b>Free Disk:</b> ${formatBytes(data.diskFree)}</div>
+                        <div class='item'><b>Disk Status:</b> <span class="${diskPercent > 90 ? 'error' : diskPercent > 80 ? 'warning' : 'status'}">${diskPercent > 90 ? 'Critical' : diskPercent > 80 ? 'Warning' : 'Normal'}</span></div>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>🌐 Network Information</h2>
+                        <div class='item'><b>Interfaces:</b> ${data.networkInterfaces}</div>
+                        <div class='item'><b>Bytes Received:</b> ${formatBytes(data.bytesReceived)}</div>
+                        <div class='item'><b>Bytes Sent:</b> ${formatBytes(data.bytesSent)}</div>
+                        <div class='item'><b>Packets Received:</b> ${data.packetsReceived}</div>
+                        <div class='item'><b>Packets Sent:</b> ${data.packetsSent}</div>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>⚙️ Process Information</h2>
+                        <div class='item'><b>Total Processes:</b> ${data.processCount}</div>
+                        <div class='item'><b>System Processes:</b> ${data.systemProcesses}</div>
+                    </div>
+                </div>
+            `;
+        }
+        fetchData();
+        setInterval(fetchData, 5000); // refresh every 5s
+    </script>
+</body>
+</html>
