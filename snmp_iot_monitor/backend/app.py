@@ -37,12 +37,20 @@ def index():
 def get_engines():
     """Get data for all engines"""
     try:
-        data = snmp_manager.get_all_engines_data()
-        return jsonify({
-            'success': True,
-            'data': data,
-            'timestamp': time.time()
-        })
+        # Use enhanced agent data if available, otherwise fall back to original
+        if AGENT_DATA:
+            return jsonify({
+                'success': True,
+                'data': AGENT_DATA,
+                'timestamp': time.time()
+            })
+        else:
+            data = snmp_manager.get_all_engines_data()
+            return jsonify({
+                'success': True,
+                'data': data,
+                'timestamp': time.time()
+            })
     except Exception as e:
         return jsonify({
             'success': False,

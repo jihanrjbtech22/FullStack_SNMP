@@ -93,18 +93,24 @@ class EnhancedEngineSNMPAgent:
         self.community = 'public'
         
     def log_snmp_message(self, message_type, oid, value=None, error=None):
-        """Log SNMP messages for debugging and educational purposes"""
-        timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        """Log SNMP messages with professional detailed format"""
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+        mib_info = self.mib_definitions.get(oid, {})
+        mib_name = mib_info.get('name', 'Unknown')
+        units = mib_info.get('units', '')
         
         log_entry = {
             'timestamp': timestamp,
             'engine_id': self.engine_id,
             'message_type': message_type,
             'oid': oid,
-            'mib_name': self.mib_definitions.get(oid, {}).get('name', 'Unknown'),
+            'mib_name': mib_name,
             'value': value,
             'error': error,
-            'port': self.port
+            'port': self.port,
+            'community': self.community,
+            'data_type': mib_info.get('type', 'Unknown'),
+            'access': mib_info.get('access', 'Unknown')
         }
         
         self.message_log.append(log_entry)
@@ -113,13 +119,30 @@ class EnhancedEngineSNMPAgent:
         if len(self.message_log) > self.max_log_entries:
             self.message_log.pop(0)
             
-        # Print to console for visibility
+        # Professional console logging with detailed format
         if message_type == 'GET_REQUEST':
-            print(f"🔍 [{timestamp}] SNMP GET Request for {oid} ({self.mib_definitions.get(oid, {}).get('name', 'Unknown')})")
+            print(f"🔍 [{timestamp}] SNMP GET Request")
+            print(f"   ├─ Engine: {self.engine_id} (Port {self.port})")
+            print(f"   ├─ OID: {oid}")
+            print(f"   ├─ MIB Name: {mib_name}")
+            print(f"   ├─ Data Type: {mib_info.get('type', 'Unknown')}")
+            print(f"   ├─ Access: {mib_info.get('access', 'Unknown')}")
+            print(f"   └─ Community: {self.community}")
         elif message_type == 'GET_RESPONSE':
-            print(f"📤 [{timestamp}] SNMP GET Response: {oid} = {value} {self.mib_definitions.get(oid, {}).get('units', '')}")
+            print(f"📤 [{timestamp}] SNMP GET Response")
+            print(f"   ├─ Engine: {self.engine_id} (Port {self.port})")
+            print(f"   ├─ OID: {oid}")
+            print(f"   ├─ MIB Name: {mib_name}")
+            print(f"   ├─ Value: {value} {units}")
+            print(f"   ├─ Data Type: {mib_info.get('type', 'Unknown')}")
+            print(f"   └─ Response Time: <1ms")
         elif message_type == 'ERROR':
-            print(f"❌ [{timestamp}] SNMP Error: {error} for OID {oid}")
+            print(f"❌ [{timestamp}] SNMP Error")
+            print(f"   ├─ Engine: {self.engine_id} (Port {self.port})")
+            print(f"   ├─ OID: {oid}")
+            print(f"   ├─ MIB Name: {mib_name}")
+            print(f"   ├─ Error: {error}")
+            print(f"   └─ Community: {self.community}")
     
     def get_temperature(self):
         """Generate realistic temperature readings with gradual variations"""
@@ -247,17 +270,18 @@ def create_enhanced_agents():
         agent.start_simulation()
         AGENT_INSTANCES[engine_id] = agent
         
-        # Initialize agent data
+        # Initialize agent data with correct field names for frontend
         AGENT_DATA[engine_id] = {
             'engine_id': engine_id,
             'temperature': agent.get_temperature(),
             'rpm': agent.get_rpm(),
             'current': agent.get_current(),
-            'power_output': agent.get_power(),
+            'power': agent.get_power(),  # Changed from 'power_output' to 'power'
             'status': agent.get_status(),
             'uptime': agent.get_uptime(),
             'last_updated': time.time(),
-            'port': config["port"]
+            'port': config["port"],
+            'health_status': 'healthy' if agent.get_status() == 1 else 'stopped'
         }
     
     return AGENT_INSTANCES, AGENT_DATA
@@ -275,15 +299,16 @@ def simulate_snmp_queries():
             if value is not None:
                 print(f"   {mib_info['name']}: {value} {mib_info['units']}")
         
-        # Update global data
+        # Update global data with correct field names
         AGENT_DATA[engine_id].update({
             'temperature': agent.get_temperature(),
             'rpm': agent.get_rpm(),
             'current': agent.get_current(),
-            'power_output': agent.get_power(),
+            'power': agent.get_power(),  # Changed from 'power_output' to 'power'
             'status': agent.get_status(),
             'uptime': agent.get_uptime(),
-            'last_updated': time.time()
+            'last_updated': time.time(),
+            'health_status': 'healthy' if agent.get_status() == 1 else 'stopped'
         })
 
 def get_agent_message_logs():

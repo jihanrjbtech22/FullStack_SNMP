@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import EngineCard from './components/EngineCard';
 import Charts from './components/Charts';
 import SNMPMonitor from './components/SNMPMonitor';
+import ProfessionalSNMPLog from './components/ProfessionalSNMPLog';
 import { fetchAllEngines, startPolling } from './api/fetchData';
 import './App.css';
 
@@ -171,6 +172,12 @@ const App = () => {
         >
           🔍 SNMP Monitor
         </button>
+        <button 
+          className={`tab-button ${activeTab === 'professional' ? 'active' : ''}`}
+          onClick={() => setActiveTab('professional')}
+        >
+          📡 Professional Log
+        </button>
       </div>
 
       {/* Tab Content */}
@@ -253,6 +260,10 @@ const App = () => {
 
       {activeTab === 'snmp' && (
         <SNMPMonitor />
+      )}
+
+      {activeTab === 'professional' && (
+        <ProfessionalSNMPLog />
       )}
 
       {/* Footer */}
