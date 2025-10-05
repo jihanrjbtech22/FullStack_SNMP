@@ -11,6 +11,7 @@ import threading
 import json
 from datetime import datetime
 from pysnmp.hlapi import *
+import os
 
 class EnhancedEngineSNMPAgent:
     """
@@ -33,9 +34,9 @@ class EnhancedEngineSNMPAgent:
         self.start_time = time.time()
         self.cycle_time = 0
         
-        # SNMP message log
+        # SNMP message log (cap configurable via env)
         self.message_log = []
-        self.max_log_entries = 100
+        self.max_log_entries = int(os.getenv('SNMP_LOG_CAP', '500'))
         
         # Engine-specific MIB definitions
         self.mib_definitions = {
@@ -248,6 +249,11 @@ class EnhancedEngineSNMPAgent:
 # Global dictionary to hold agent instances and their data
 AGENT_INSTANCES = {}
 AGENT_DATA = {}
+ALERTS = []  # rolling list of alerts
+TRAP_LOG = []  # simulated SNMP trap messages
+TEMP_THRESHOLD = float(os.getenv('TEMP_THRESHOLD_C', '80'))
+ALERTS_CAP = int(os.getenv('ALERTS_CAP', '200'))
+TRAPS_CAP = int(os.getenv('TRAPS_CAP', '500'))
 
 def create_enhanced_agents():
     """Create enhanced SNMP agents for all engines"""
@@ -311,6 +317,37 @@ def simulate_snmp_queries():
             'health_status': 'healthy' if agent.get_status() == 1 else 'stopped'
         })
 
+        # Check alerts (overheat) and generate simulated trap
+        temp_value = AGENT_DATA[engine_id]['temperature']
+        if temp_value > TEMP_THRESHOLD:
+            alert = {
+                'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                'engine_id': engine_id,
+                'type': 'OVERHEAT',
+                'message': f'Temperature {temp_value}°C crossed threshold {TEMP_THRESHOLD}°C',
+                'value': temp_value,
+                'threshold': TEMP_THRESHOLD
+            }
+            ALERTS.append(alert)
+            if len(ALERTS) > ALERTS_CAP:
+                ALERTS.pop(0)
+
+            # Simulated SNMP trap (enterprise OID under our 1.3.6.1.4.1.9999.1.2.1)
+            trap = {
+                'timestamp': alert['timestamp'],
+                'engine_id': engine_id,
+                'trap_oid': '1.3.6.1.4.1.9999.1.2.1',
+                'trap_name': 'engineOverheatTrap',
+                'vars': {
+                    'engineTemperatureOID': '1.3.6.1.4.1.9999.1.1.1.0',
+                    'engineTemperature': temp_value,
+                    'threshold': TEMP_THRESHOLD
+                }
+            }
+            TRAP_LOG.append(trap)
+            if len(TRAP_LOG) > TRAPS_CAP:
+                TRAP_LOG.pop(0)
+
 def get_agent_message_logs():
     """Get all agent message logs"""
     all_logs = {}
@@ -340,6 +377,14 @@ def get_mib_definitions():
             'message_count': len(agent.message_log)
         }
     return mib_info
+
+def get_alerts():
+    """Return current alerts (most recent first)."""
+    return list(ALERTS)[-ALERTS_CAP:][::-1]
+
+def get_traps():
+    """Return simulated SNMP trap log (most recent first)."""
+    return list(TRAP_LOG)[-TRAPS_CAP:][::-1]
 
 if __name__ == "__main__":
     # Create enhanced agents

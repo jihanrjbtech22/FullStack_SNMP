@@ -9,7 +9,15 @@ from flask_cors import CORS
 import threading
 import time
 from snmp_manager import get_snmp_manager
-from enhanced_snmp_agent import create_enhanced_agents, simulate_snmp_queries, get_agent_message_logs, get_mib_definitions, AGENT_DATA
+from enhanced_snmp_agent import (
+    create_enhanced_agents,
+    simulate_snmp_queries,
+    get_agent_message_logs,
+    get_mib_definitions,
+    get_alerts,
+    get_traps,
+    AGENT_DATA,
+)
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -56,6 +64,30 @@ def get_engines():
             'success': False,
             'error': str(e)
         }), 500
+
+@app.route('/api/alerts')
+def get_current_alerts():
+    """Return active alerts (e.g., temperature threshold breaches)."""
+    try:
+        return jsonify({
+            'success': True,
+            'data': get_alerts(),
+            'timestamp': time.time()
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/snmp/traps')
+def get_trap_log():
+    """Return simulated SNMP trap messages."""
+    try:
+        return jsonify({
+            'success': True,
+            'data': get_traps(),
+            'timestamp': time.time()
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/engines/<engine_id>')
 def get_engine(engine_id):
