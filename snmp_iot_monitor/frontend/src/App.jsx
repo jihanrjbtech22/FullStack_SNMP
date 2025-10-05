@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import EngineCard from './components/EngineCard';
 import Charts from './components/Charts';
+import SNMPMonitor from './components/SNMPMonitor';
 import { fetchAllEngines, startPolling } from './api/fetchData';
 import './App.css';
 
@@ -15,6 +16,7 @@ const App = () => {
   const [selectedParameter, setSelectedParameter] = useState('temperature');
   const [expandedEngine, setExpandedEngine] = useState(null);
   const [isPolling, setIsPolling] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   // Available parameters for charting
   const parameters = [
@@ -155,7 +157,26 @@ const App = () => {
         </div>
       </div>
 
-      {/* Summary Stats */}
+      {/* Tab Navigation */}
+      <div className="tab-navigation">
+        <button 
+          className={`tab-button ${activeTab === 'dashboard' ? 'active' : ''}`}
+          onClick={() => setActiveTab('dashboard')}
+        >
+          📊 Dashboard
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'snmp' ? 'active' : ''}`}
+          onClick={() => setActiveTab('snmp')}
+        >
+          🔍 SNMP Monitor
+        </button>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'dashboard' && (
+        <>
+          {/* Summary Stats */}
       {summary && (
         <div className="summary-stats">
           <div className="stat-card">
@@ -227,6 +248,12 @@ const App = () => {
           ))}
         </div>
       </div>
+        </>
+      )}
+
+      {activeTab === 'snmp' && (
+        <SNMPMonitor />
+      )}
 
       {/* Footer */}
       <div className="app-footer">

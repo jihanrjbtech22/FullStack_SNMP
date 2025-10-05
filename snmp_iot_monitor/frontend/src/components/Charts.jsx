@@ -35,6 +35,17 @@ const Charts = ({ enginesData, selectedParameter, timeRange = 60 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const chartRef = useRef(null);
 
+  // Get Y-axis label based on parameter
+  const getYAxisLabel = (parameter) => {
+    const labels = {
+      temperature: 'Temperature (°C)',
+      rpm: 'RPM',
+      current: 'Current (A)',
+      power: 'Power (W)',
+    };
+    return labels[parameter] || parameter;
+  };
+
   // Chart configuration
   const chartOptions = {
     responsive: true,
@@ -176,17 +187,6 @@ const Charts = ({ enginesData, selectedParameter, timeRange = 60 }) => {
       '#06b6d4', // Cyan
     ];
     return colors[index % colors.length];
-  };
-
-  // Get Y-axis label based on parameter
-  const getYAxisLabel = (parameter) => {
-    const labels = {
-      temperature: 'Temperature (°C)',
-      rpm: 'RPM',
-      current: 'Current (A)',
-      power: 'Power (W)',
-    };
-    return labels[parameter] || parameter;
   };
 
   // Get chart title based on parameter

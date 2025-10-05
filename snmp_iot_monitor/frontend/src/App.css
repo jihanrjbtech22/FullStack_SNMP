@@ -399,3 +399,40 @@
     font-size: 20px;
   }
 }
+
+/* Tab Navigation */
+.tab-navigation {
+  display: flex;
+  background-color: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.tab-button {
+  flex: 1;
+  padding: 15px 20px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 3px solid transparent;
+}
+
+.tab-button:hover {
+  background-color: #f9fafb;
+  color: #374151;
+}
+
+.tab-button.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+  background-color: #f8fafc;
+}
+
+.tab-button.active:hover {
+  background-color: #f1f5f9;
+}

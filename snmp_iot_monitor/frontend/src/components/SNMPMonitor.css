@@ -1,0 +1,248 @@
+.snmp-monitor {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.snmp-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.snmp-header h2 {
+    margin: 0;
+    color: #1f2937;
+    font-size: 1.5em;
+}
+
+.snmp-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.engine-selector {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background-color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.engine-selector:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.simulate-btn {
+    padding: 8px 16px;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.simulate-btn:hover {
+    background-color: #2563eb;
+}
+
+.auto-refresh-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #6b7280;
+    cursor: pointer;
+}
+
+.auto-refresh-toggle input[type="checkbox"] {
+    margin: 0;
+}
+
+.snmp-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.snmp-messages, .snmp-mib {
+    background-color: #f9fafb;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.snmp-messages h3, .snmp-mib h3 {
+    margin: 0 0 15px 0;
+    color: #374151;
+    font-size: 1.2em;
+}
+
+.messages-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background-color: #fff;
+}
+
+.message-item {
+    padding: 12px;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.2s;
+}
+
+.message-item:hover {
+    background-color: #f9fafb;
+}
+
+.message-item:last-child {
+    border-bottom: none;
+}
+
+.message-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.message-icon {
+    font-size: 16px;
+}
+
+.message-type {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.message-timestamp {
+    font-size: 12px;
+    color: #6b7280;
+    margin-left: auto;
+}
+
+.message-details {
+    margin-left: 26px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.message-oid {
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+
+.message-mib {
+    color: #374151;
+    margin-bottom: 4px;
+}
+
+.message-value {
+    color: #059669;
+    font-weight: 500;
+}
+
+.message-error {
+    color: #dc2626;
+    font-weight: 500;
+}
+
+.no-messages, .no-mib {
+    text-align: center;
+    color: #6b7280;
+    padding: 20px;
+    font-style: italic;
+}
+
+.mib-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.mib-item {
+    background-color: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 10px;
+    transition: box-shadow 0.2s;
+}
+
+.mib-item:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mib-oid {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #1f2937;
+    margin-bottom: 6px;
+    word-break: break-all;
+}
+
+.mib-name {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 4px;
+}
+
+.mib-description {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.mib-details {
+    display: flex;
+    gap: 15px;
+    font-size: 12px;
+}
+
+.mib-type, .mib-units, .mib-access {
+    background-color: #f3f4f6;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #374151;
+}
+
+.mib-type {
+    color: #7c3aed;
+}
+
+.mib-units {
+    color: #059669;
+}
+
+.mib-access {
+    color: #dc2626;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .snmp-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .snmp-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .snmp-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
