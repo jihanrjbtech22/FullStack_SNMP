@@ -4,7 +4,7 @@ Flask Web Server for Industrial IoT SNMP Monitoring
 Provides REST API for engine monitoring data and serves the frontend.
 """
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, Response
 from flask_cors import CORS
 import threading
 import time
@@ -18,6 +18,8 @@ from enhanced_snmp_agent import (
     get_traps,
     AGENT_DATA,
 )
+import json
+import time
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -224,6 +226,51 @@ def start_enhanced_snmp_simulation():
     simulation_thread.start()
     
     print("✅ Enhanced SNMP simulation started with explicit message logging")
+
+@app.route('/api/stream/snmp')
+def stream_snmp_events():
+    """Continuous stream of SNMP events and traps via Server-Sent Events (SSE)."""
+    def event_stream():
+        last_counts = {k: 0 for k in get_agent_message_logs().keys()}
+        while True:
+            logs = get_agent_message_logs()
+            for engine_id, messages in logs.items():
+                start = last_counts.get(engine_id, 0)
+                for msg in messages[start:]:
+                    payload = {
+                        'timestamp': msg.get('timestamp'),
+                        'engine_id': msg.get('engine_id'),
+                        'type': msg.get('message_type'),
+                        'oid': msg.get('oid'),
+                        'mib_name': msg.get('mib_name'),
+                        'value': msg.get('value'),
+                        'port': msg.get('port')
+                    }
+                    yield f"data: {json.dumps(payload)}\n\n"
+                last_counts[engine_id] = len(messages)
+
+            # Stream traps as well
+            traps = get_traps()
+            for trap in traps[-1:]:  # only newest each loop
+                payload = {
+                    'timestamp': trap.get('timestamp'),
+                    'engine_id': trap.get('engine_id'),
+                    'type': 'TRAP',
+                    'trap_oid': trap.get('trap_oid'),
+                    'trap_name': trap.get('trap_name'),
+                    'vars': trap.get('vars')
+                }
+                yield f"data: {json.dumps(payload)}\n\n"
+
+            time.sleep(0.5)
+
+    headers = {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*'
+    }
+    return Response(event_stream(), headers=headers)
 
 if __name__ == '__main__':
     # Start enhanced SNMP simulation

@@ -36,7 +36,7 @@ class EnhancedEngineSNMPAgent:
         
         # SNMP message log (cap configurable via env)
         self.message_log = []
-        self.max_log_entries = int(os.getenv('SNMP_LOG_CAP', '500'))
+        self.max_log_entries = int(os.getenv('SNMP_LOG_CAP', '500'))  # 0 = unlimited
         
         # Engine-specific MIB definitions
         self.mib_definitions = {
@@ -117,7 +117,7 @@ class EnhancedEngineSNMPAgent:
         self.message_log.append(log_entry)
         
         # Keep only recent entries
-        if len(self.message_log) > self.max_log_entries:
+        if self.max_log_entries > 0 and len(self.message_log) > self.max_log_entries:
             self.message_log.pop(0)
             
         # Professional console logging with detailed format
@@ -347,6 +347,9 @@ def simulate_snmp_queries():
             TRAP_LOG.append(trap)
             if len(TRAP_LOG) > TRAPS_CAP:
                 TRAP_LOG.pop(0)
+
+            # Also mirror as a message entry for live stream convenience
+            self.log_snmp_message('TRAP', trap['trap_oid'], value=temp_value)
 
 def get_agent_message_logs():
     """Get all agent message logs"""

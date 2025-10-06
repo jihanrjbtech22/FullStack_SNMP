@@ -3,6 +3,7 @@ import EngineCard from './components/EngineCard';
 import Charts from './components/Charts';
 import SNMPMonitor from './components/SNMPMonitor';
 import ProfessionalSNMPLog from './components/ProfessionalSNMPLog';
+import StreamViewer from './components/StreamViewer';
 import { fetchAllEngines, startPolling } from './api/fetchData';
 import './App.css';
 
@@ -18,6 +19,7 @@ const App = () => {
   const [expandedEngine, setExpandedEngine] = useState(null);
   const [isPolling, setIsPolling] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [alerts, setAlerts] = useState([]);
 
   // Available parameters for charting
   const parameters = [
@@ -67,6 +69,38 @@ const App = () => {
     };
   }, []);
 
+  // Poll alerts for banner
+  useEffect(() => {
+    let t = null;
+    const load = async () => {
+      try {
+        const r = await fetch('/api/alerts');
+        const j = await r.json();
+        if (j.success) setAlerts(j.data || []);
+      } catch (e) {
+        // ignore
+      }
+    };
+    load();
+    t = setInterval(load, 2000);
+    return () => t && clearInterval(t);
+  }, []);
+
+  // Poll alerts for banner
+  useEffect(() => {
+    let t = null;
+    const load = async () => {
+      try {
+        const r = await fetch('/api/alerts');
+        const j = await r.json();
+        if (j.success) setAlerts(j.data || []);
+      } catch (e) {}
+    };
+    load();
+    t = setInterval(load, 2000);
+    return () => t && clearInterval(t);
+  }, []);
+
   // Handle engine card expansion
   const handleEngineToggle = (engineId) => {
     setExpandedEngine(expandedEngine === engineId ? null : engineId);
@@ -109,6 +143,16 @@ const App = () => {
           <p>Connecting to engine agents...</p>
         </div>
       </div>
+
+      {/* Alert Banner */}
+      {alerts.length > 0 && (
+        <div className="alert-banner">
+          <div className="alert-dot" />
+          <div className="alert-text">
+            Overheat Warning: {alerts[0].engine_id} temp {alerts[0].value}°C (>{alerts[0].threshold}°C)
+          </div>
+        </div>
+      )}
     );
   }
 
@@ -158,6 +202,16 @@ const App = () => {
         </div>
       </div>
 
+      {/* Alert Banner */}
+      {alerts.length > 0 && (
+        <div className="alert-banner">
+          <div className="alert-dot" />
+          <div className="alert-text">
+            Overheat Warning: {alerts[0].engine_id} temp {alerts[0].value}°C (&gt;{alerts[0].threshold}°C)
+          </div>
+        </div>
+      )}
+
       {/* Tab Navigation */}
       <div className="tab-navigation">
         <button 
@@ -177,6 +231,12 @@ const App = () => {
           onClick={() => setActiveTab('professional')}
         >
           📡 Professional Log
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'live' ? 'active' : ''}`}
+          onClick={() => setActiveTab('live')}
+        >
+          📡 Live Stream
         </button>
       </div>
 
@@ -264,6 +324,14 @@ const App = () => {
 
       {activeTab === 'professional' && (
         <ProfessionalSNMPLog />
+      )}
+
+      {activeTab === 'live' && (
+        <StreamViewer />
+      )}
+
+      {activeTab === 'live' && (
+        <StreamViewer />
       )}
 
       {/* Footer */}
