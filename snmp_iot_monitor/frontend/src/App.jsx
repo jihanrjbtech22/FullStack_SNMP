@@ -143,16 +143,6 @@ const App = () => {
           <p>Connecting to engine agents...</p>
         </div>
       </div>
-
-      {/* Alert Banner */}
-      {alerts.length > 0 && (
-        <div className="alert-banner">
-          <div className="alert-dot" />
-          <div className="alert-text">
-            Overheat Warning: {alerts[0].engine_id} temp {alerts[0].value}°C (>{alerts[0].threshold}°C)
-          </div>
-        </div>
-      )}
     );
   }
 
